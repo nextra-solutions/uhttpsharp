@@ -17,7 +17,7 @@
  */
 
 using System.Text;
-using log4net;
+using Serilog;
 using System.Net;
 using System.Reflection;
 using System;
@@ -35,8 +35,6 @@ namespace uhttpsharp
         private const string CrLf = "\r\n";
         private static readonly byte[] CrLfBuffer = Encoding.UTF8.GetBytes(CrLf);
 
-        private static readonly ILog Logger = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
-        
         private readonly IClient _client;
         private readonly Func<IHttpContext, Task> _requestHandler;
         private readonly IHttpRequestProvider _requestProvider;
@@ -53,7 +51,7 @@ namespace uhttpsharp
 
             _stream = new BufferedStream(_client.Stream, 8192);
             
-            Logger.InfoFormat("Got Client {0}", _remoteEndPoint);
+            Log.Information("Got Client {endpoint}", _remoteEndPoint);
 
             Task.Factory.StartNew(Process);
 
@@ -78,7 +76,7 @@ namespace uhttpsharp
 
                         var context = new HttpContext(request, _client.RemoteEndPoint);
 
-                        Logger.InfoFormat("{1} : Got request {0}", request.Uri, _client.RemoteEndPoint);
+                        Log.Information("{endpoint} : Got request {uri}", _client.RemoteEndPoint, request.Uri);
 
                         await _requestHandler(context).ConfigureAwait(false);
 
@@ -106,11 +104,11 @@ namespace uhttpsharp
             catch (Exception e)
             {
                 // Hate people who make bad calls.
-                Logger.Warn(string.Format("Error while serving : {0}", _remoteEndPoint), e);
+                Log.Warning(e, "Error while serving : {endpoint}", _remoteEndPoint);
                 _client.Close();
             }
 
-            Logger.InfoFormat("Lost Client {0}", _remoteEndPoint);
+            Log.Information("Lost Client {endpoint}", _remoteEndPoint);
         }
         private async Task WriteResponse(HttpContext context, StreamWriter writer)
         {

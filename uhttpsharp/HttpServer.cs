@@ -16,7 +16,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-using log4net;
+using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -28,8 +28,6 @@ namespace uhttpsharp
 {
     public sealed class HttpServer : IDisposable
     {
-        private static readonly ILog Logger = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
-
         private bool _isActive;
 
         private readonly IList<IHttpRequestHandler> _handlers = new List<IHttpRequestHandler>();
@@ -63,7 +61,7 @@ namespace uhttpsharp
                 Task.Factory.StartNew(() => Listen(tempListener));
             }
 
-            Logger.InfoFormat("Embedded uhttpserver started.");
+            Log.Information("Embedded uhttpserver started.");
         }
 
         private async void Listen(IHttpListener listener)
@@ -78,11 +76,11 @@ namespace uhttpsharp
                 }
                 catch (Exception e)
                 {
-                    Logger.Warn("Error while getting client", e);
+                    Log.Warning(e, "Error while getting client");
                 }
             }
 
-            Logger.InfoFormat("Embedded uhttpserver stopped.");
+            Log.Information("Embedded uhttpserver stopped.");
         }
 
         public void Dispose()
