@@ -226,8 +226,11 @@ namespace uhttpsharp
         public async Task WriteBody(StreamWriter writer)
         {
             ContentStream.Position = 0;
-            await ContentStream.CopyToAsync(writer.BaseStream).ConfigureAwait(false);            
+            StreamReader sr = new StreamReader(ContentStream);
+            string temp = await sr.ReadToEndAsync().ConfigureAwait(false);
+            await writer.WriteAsync(temp).ConfigureAwait(false);
         }
+
         public HttpResponseCode ResponseCode
         {
             get { return _responseCode; }
@@ -245,8 +248,9 @@ namespace uhttpsharp
         public async Task WriteHeaders(StreamWriter writer)
         {
             _headerStream.Position = 0;
-            await _headerStream.CopyToAsync(writer.BaseStream).ConfigureAwait(false);
-            
+            StreamReader sr = new StreamReader(_headerStream);
+            string temp = await sr.ReadToEndAsync().ConfigureAwait(false);
+            await writer.WriteAsync(temp).ConfigureAwait(false);
         }
     }
 }
