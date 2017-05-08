@@ -212,9 +212,31 @@ namespace uhttpsharp
             return new HttpResponse(
                 code,
                 string.Format(
-                    "<html><head><title>{0}</title></head><body><h1>{0}</h1><hr>{1}</body></html>",
+                    "<html><head><title>{0}</title></head><body>{1}</body></html>",
                     message, body), keepAliveConnection);
         }
+
+        public static HttpResponse CreateWithMessage(HttpResponseCode code, string message, bool keepAliveConnection, string body, IEnumerable<KeyValuePair<string, string>> headers)
+        {
+            StringBuilder htmlHead = new StringBuilder();
+            foreach(var kv in headers)
+            {
+                htmlHead.Append("<");
+                htmlHead.Append(kv.Key);
+                htmlHead.Append(">");
+                htmlHead.Append(kv.Value);
+                htmlHead.Append("</");
+                htmlHead.Append(kv.Key);
+                htmlHead.Append(">");
+            }
+            string content = string.Format(
+                    "<html><head><title>{0}</title>{1}</head><body>{2}</body></html>",
+                    message, htmlHead.ToString(), body);
+            return new HttpResponse(
+                code, "text/html; charset=utf-8",
+                StringToStream(content), keepAliveConnection);
+        }
+
         private static MemoryStream StringToStream(string content)
         {
             var stream = new MemoryStream();
